@@ -8,7 +8,7 @@ final case class EO private(os: Vector[Int]) {
   override def toString = os.mkString("EO(", ",", ")")
 
   def permute(perm: Perm): EO =
-    EO((1 to 12).toVector.map(i => os(perm.image(i) - 1)))
+    EO((1 to 12).toVector.map(i => os(perm.invImage(i) - 1)))
 }
 
 object EO {
@@ -32,12 +32,12 @@ object EdgesState {
 
     def combine(x: EdgesState, y: EdgesState) = EdgesState(
       x.permutation |+| y.permutation,
-      x.orientation.permute(y.permutation.inverse) |+| y.orientation
+      x.orientation.permute(y.permutation) |+| y.orientation
     )
     def empty = EdgesState.id
     def inverse(a: EdgesState) = EdgesState(
       a.permutation.inverse,
-      a.orientation.permute(a.permutation).inverse
+      a.orientation.permute(a.permutation.inverse).inverse
     )
   }
 }

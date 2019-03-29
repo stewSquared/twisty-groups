@@ -12,7 +12,7 @@ final case class CO private(os: Vector[Int]) {
   }.mkString("CO(", ",", ")")
 
   def permute(perm: Perm): CO =
-    CO((1 to 8).toVector.map(i => os(perm.image(i) - 1)))
+    CO((1 to 8).toVector.map(i => os(perm.invImage(i) - 1)))
 }
 
 object CO {
@@ -36,12 +36,12 @@ object CornersState {
 
     def combine(x: CornersState, y: CornersState) = CornersState(
       x.permutation |+| y.permutation,
-      x.orientation.permute(y.permutation.inverse) |+| y.orientation
+      x.orientation.permute(y.permutation) |+| y.orientation
     )
     def empty = CornersState.id
     def inverse(a: CornersState) = CornersState(
       a.permutation.inverse,
-      a.orientation.permute(a.permutation).inverse
+      a.orientation.permute(a.permutation.inverse).inverse
     )
   }
 }
