@@ -9,9 +9,9 @@ class CubeStateSpec extends FlatSpec with Matchers {
 
   "CubeState composition" should "pass some spot checks" in {
 
-    (id |+| right) shouldBe CubeState(Perm(1,4,5,8), CO(2,0,0,1,2,0,0,1))
+    (id |+| right).corners shouldBe CornersState(Perm(1,4,5,8), CO(2,0,0,1,2,0,0,1))
 
-    (id |+| right |+| front) shouldBe CubeState(Perm(1,4,5,7,2), CO(1,2,0,1,2,0,2,1))
+    (id |+| right |+| front).corners shouldBe CornersState(Perm(1,4,5,7,2), CO(1,2,0,1,2,0,2,1))
   }
 
   "Inverses of basic moves" should "behave sensibly" in {
@@ -35,7 +35,7 @@ class CubeStateSpec extends FlatSpec with Matchers {
   "Half turns" should "not affect corner orientation" in {
     import CubeState.id
 
-    List(id.u2, id.d2, id.l2, id.r2, id.f2, id.b2).map(_.co).toSet shouldBe Set(id.co)
+    List(id.u2, id.d2, id.l2, id.r2, id.f2, id.b2).map(_.corners.co).toSet shouldBe Set(id.corners.co)
   }
 
   "RU trigger" should "behave as expected" in {
@@ -45,6 +45,6 @@ class CubeStateSpec extends FlatSpec with Matchers {
 
     val trig2 = trig |+| trig
 
-    (trig2.d |+| trig2.d |+| trig2.d2) shouldBe CubeState(Perm.id, CO(0,0,0,0,0,1,1,1))
+    (trig2.d |+| trig2.d |+| trig2.d2) shouldBe CubeState(CornersState(Perm.id, CO(0,0,0,0,0,1,1,1)), EdgesState.id)
   }
 }

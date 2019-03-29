@@ -4,7 +4,7 @@ import net.alasc.perms._
 import cats.kernel.Group
 import cats.syntax.group._
 
-final case class CubeState(cp: Perm, co: CO) {
+final case class CubeState(corners: CornersState, edges: EdgesState) {
   import CubeState._
   import CubeState.CubeStateGroup
 
@@ -31,28 +31,21 @@ final case class CubeState(cp: Perm, co: CO) {
 }
 
 object CubeState {
-  val id = CubeState(
-    cp = Perm.id,
-    co = Group.empty[CO]
-  )
+  val id = CubeState(CornersState.id, EdgesState.id)
 
   implicit object CubeStateGroup extends cats.kernel.Group[CubeState] {
-
     def combine(x: CubeState, y: CubeState) = CubeState(
-      x.cp |+| y.cp,
-      x.co.permute(y.cp.inverse) |+| y.co
+      x.corners |+| y.corners,
+      x.edges |+| y.edges
     )
     def empty = CubeState.id
-    def inverse(a: cube.CubeState) = CubeState(
-      a.cp.inverse,
-      a.co.permute(a.cp).inverse
-    )
+    def inverse(a: cube.CubeState) = CubeState(a.corners.inverse, a.edges.inverse)
   }
 
-  val up    = CubeState(cp = Perm(1,2,3,4), co = CO(0,0,0,0,0,0,0,0))
-  val down  = CubeState(cp = Perm(5,6,7,8), co = CO(0,0,0,0,0,0,0,0))
-  val right = CubeState(cp = Perm(1,4,5,8), co = CO(2,0,0,1,2,0,0,1))
-  val left  = CubeState(cp = Perm(2,3,6,7), co = CO(0,1,2,0,0,1,2,0))
-  val front = CubeState(cp = Perm(1,8,7,2), co = CO(1,2,0,0,0,0,1,2))
-  val back  = CubeState(cp = Perm(3,4,5,6), co = CO(0,0,1,2,1,2,0,0))
+  val up    = CubeState(CornersState(cp = Perm(1,2,3,4), CO(0,0,0,0,0,0,0,0)), EdgesState(Perm( 1, 2, 4, 5), EO(0,0,0,0,0,0,0,0,0,0,0,0)))
+  val down  = CubeState(CornersState(cp = Perm(5,6,7,8), CO(0,0,0,0,0,0,0,0)), EdgesState(Perm( 7, 8,10,11), EO(0,0,0,0,0,0,0,0,0,0,0,0)))
+  val right = CubeState(CornersState(cp = Perm(1,4,5,8), CO(2,0,0,1,2,0,0,1)), EdgesState(Perm( 5, 6, 8, 9), EO(0,0,0,0,0,0,0,0,0,0,0,0)))
+  val left  = CubeState(CornersState(cp = Perm(2,3,6,7), CO(0,1,2,0,0,1,2,0)), EdgesState(Perm(11,12, 2, 3), EO(0,0,0,0,0,0,0,0,0,0,0,0)))
+  val front = CubeState(CornersState(cp = Perm(1,8,7,2), CO(1,2,0,0,0,0,1,2)), EdgesState(Perm( 3, 4, 6, 7), EO(0,0,1,1,0,1,1,0,0,0,0,0)))
+  val back  = CubeState(CornersState(cp = Perm(3,4,5,6), CO(0,0,1,2,1,2,0,0)), EdgesState(Perm( 9,10,12, 1), EO(1,0,0,0,0,0,0,0,1,1,0,1)))
 }
