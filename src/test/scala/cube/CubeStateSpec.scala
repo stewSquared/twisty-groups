@@ -35,7 +35,7 @@ class CubeStateSpec extends FlatSpec with Matchers {
   "Half turns" should "not affect corner orientation" in {
     import CubeState.id
 
-    List(id.u2, id.d2, id.l2, id.r2, id.f2, id.b2).map(_.corners.co).toSet shouldBe Set(id.corners.co)
+    List(id.u2, id.d2, id.l2, id.r2, id.f2, id.b2).map(_.co).toSet shouldBe Set(id.co)
   }
 
   "RU trigger" should "behave as expected" in {
@@ -46,5 +46,7 @@ class CubeStateSpec extends FlatSpec with Matchers {
     val trig2 = trig |+| trig
 
     (trig2.d |+| trig2.d |+| trig2.d2) shouldBe CubeState(CornersState(Perm.id, CO(0,0,0,0,0,1,1,1)), EdgesState.id)
+
+    (trig |+| trig |+| trig).edges shouldBe EdgesState.id
   }
 }

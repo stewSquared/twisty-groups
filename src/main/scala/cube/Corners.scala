@@ -27,7 +27,7 @@ object CO {
   }
 }
 
-final case class CornersState(cp: Perm, co: CO)
+final case class CornersState(permutation: Perm, orientation: CO)
 
 object CornersState {
   val id = CornersState(Perm.id, Group.empty[CO])
@@ -35,13 +35,13 @@ object CornersState {
   implicit object CornersStateGroup extends cats.kernel.Group[CornersState] {
 
     def combine(x: CornersState, y: CornersState) = CornersState(
-      x.cp |+| y.cp,
-      x.co.permute(y.cp.inverse) |+| y.co
+      x.permutation |+| y.permutation,
+      x.orientation.permute(y.permutation.inverse) |+| y.orientation
     )
     def empty = CornersState.id
-    def inverse(a: cube.CornersState) = CornersState(
-      a.cp.inverse,
-      a.co.permute(a.cp).inverse
+    def inverse(a: CornersState) = CornersState(
+      a.permutation.inverse,
+      a.orientation.permute(a.permutation).inverse
     )
   }
 }

@@ -23,7 +23,7 @@ object EO {
   }
 }
 
-final case class EdgesState(ep: Perm, eo: EO)
+final case class EdgesState(permutation: Perm, orientation: EO)
 
 object EdgesState {
   val id = EdgesState(Perm.id, Group.empty[EO])
@@ -31,13 +31,13 @@ object EdgesState {
   implicit object EdgesStateGroup extends cats.kernel.Group[EdgesState] {
 
     def combine(x: EdgesState, y: EdgesState) = EdgesState(
-      x.ep |+| y.ep,
-      x.eo.permute(y.ep.inverse) |+| y.eo
+      x.permutation |+| y.permutation,
+      x.orientation.permute(y.permutation.inverse) |+| y.orientation
     )
     def empty = EdgesState.id
-    def inverse(a: cube.EdgesState) = EdgesState(
-      a.ep.inverse,
-      a.eo.permute(a.ep).inverse
+    def inverse(a: EdgesState) = EdgesState(
+      a.permutation.inverse,
+      a.orientation.permute(a.permutation).inverse
     )
   }
 }
