@@ -1,4 +1,6 @@
+package twistygroups
 package cube
+package model
 
 import net.alasc.perms._
 import cats.kernel.Group
@@ -44,7 +46,7 @@ object CubeState {
       x.edges |+| y.edges
     )
     def empty = CubeState.id
-    def inverse(a: cube.CubeState) = CubeState(a.corners.inverse, a.edges.inverse)
+    def inverse(a: CubeState) = CubeState(a.corners.inverse, a.edges.inverse)
   }
 
   val up    = CubeState(CornersState(Perm(1,2,3,4), CO(0,0,0,0,0,0,0,0)), EdgesState(Perm( 1, 2, 4, 5), EO(0,0,0,0,0,0,0,0,0,0,0,0)))

@@ -1,4 +1,4 @@
-package algebra
+package perms
 
 case class Cycle[T](elems: Vector[T]) {
   override def toString = elems.mkString("Cycle(", " -> ", ")")

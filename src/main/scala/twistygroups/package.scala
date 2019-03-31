@@ -1,9 +1,8 @@
 import net.alasc.perms._
-
 import cats.kernel.Group
 import cats.syntax.group._
 
-package object cube {
+package object twistygroups {
   def isEven(perm: Perm) =
     ((perm.toCycles.seq.length % 2) ^ (perm.nMovedPoints % 2)) == 0
 

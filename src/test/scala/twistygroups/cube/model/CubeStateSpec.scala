@@ -1,4 +1,6 @@
+package twistygroups
 package cube
+package model
 
 import org.scalatest._
 import net.alasc.perms._

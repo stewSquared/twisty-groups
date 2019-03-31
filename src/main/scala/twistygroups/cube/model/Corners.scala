@@ -1,4 +1,6 @@
+package twistygroups
 package cube
+package model
 
 import cats.kernel.Group
 import cats.syntax.group._

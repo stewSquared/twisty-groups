@@ -1,8 +1,11 @@
+package twistygroups
 package cube
 package algs
 
 import cats.syntax.group._
 import cats.Eq
+
+import cube.model.CubeState
 
 sealed trait Alg { lhs =>
   def state: CubeState
