@@ -6,12 +6,7 @@ import cats.Eq
 
 sealed trait Alg { lhs =>
   def state: CubeState
-
-  def *(rhs: Alg) = (lhs, rhs) match {
-    case (ID, a) => a
-    case (a, ID) => a
-    case (a, b) => Comb(a, b)
-  }
+  def *(rhs: Alg) = Comb(lhs, rhs)
 }
 
 object Alg {
@@ -68,17 +63,41 @@ case object `B'` extends Turn(CubeState.id.b3)
 //   }
 // }
 
-case class Comb(a: Alg, b: Alg) extends Alg {
+final case class Comb private[Comb] (a: Alg, b: Alg) extends Alg {
   override def toString = s"$a $b"
   override def state = a.state |+| b.state
 }
 
-case class Conj private (a: Alg, b: Alg) extends Alg {
+object Comb {
+  def apply(a: Alg, b: Alg): Alg = (a, b) match {
+    case (ID, alg) => alg
+    case (alg, ID) => alg
+    case (a, b) => new Comb(a, b)
+  }  
+}
+
+final case class Conj private[Conj] (a: Alg, b: Alg) extends Alg {
   override def toString = s"[$a: $b]"
   override def state = a.state |+| b.state |-| a.state
 }
 
-case class Comm(a: Alg, b: Alg) extends Alg {
+object Conj {
+  def apply(a: Alg, b: Alg): Alg = (a, b) match {
+    case (ID, alg) => alg
+    case (alg, ID) => ID
+    case (a, b) => new Conj(a, b)
+  }
+}
+
+final case class Comm private[Comm] (a: Alg, b: Alg) extends Alg {
   override def toString = s"[$a, $b]"
   override def state = a.state |+| b.state |-| a.state |-| b.state
+}
+
+object Comm {
+  def apply(a: Alg, b: Alg): Alg = (a, b) match {
+    case (ID, alg) => ID
+    case (alg, ID) => ID
+    case (a, b) => new Comm(a, b)
+  }
 }
