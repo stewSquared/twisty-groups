@@ -15,7 +15,7 @@ package object twistygroups {
     }
   }
 
-  def asThreeCycles(perm: Perm): Option[List[Perm]] = {
+  def asThreeCycles(perm: Perm): Option[List[Cycle]] = {
     if (!isEven(perm)) None else Some {
       val swaps = if (perm.toCycles.seq.length <= 1) {
         asTranspositions(perm)
@@ -25,7 +25,19 @@ package object twistygroups {
         asTranspositions(perm |+| crossPerm) ++ asTranspositions(crossPerm.inverse)
       }
 
-      swaps.grouped(2).map(Group.combineAll(_)).toList
+      swaps.grouped(2).map(Group.combineAll(_)).toList.flatMap(asThreeCycle)
     }
+  }
+
+  def asThreeCycle(perm: Perm): Option[Cycle] = {
+    val cycles = perm.toCycles.seq
+    if (cycles.length > 1) None
+    else cycles.headOption.filter(_.length == 3)
+  }
+
+  def asCycle(perm: Perm): Option[Cycle] = {
+    val cycles = perm.toCycles.seq
+    if (cycles.length > 1) None
+    else cycles.headOption
   }
 }
