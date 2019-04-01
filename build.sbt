@@ -18,3 +18,9 @@ lazy val root = (project in file("."))
 scalacOptions += "-Ypartial-unification"
 
 // See https://www.scala-sbt.org/1.x/docs/Using-Sonatype.html for instructions on how to publish to Sonatype.
+
+initialCommands in console := """|import net.alasc.perms._, default._
+                                 |import cats.kernel.Group, cats.syntax.group._
+                                 |import twistygroups._, cube.algs._, cube.model.CubeState.id
+                                 |implicit val random = new scala.util.Random
+                                 |""".stripMargin
