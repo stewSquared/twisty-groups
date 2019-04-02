@@ -10,6 +10,27 @@ import cube.model.CubeState
 sealed trait Alg { lhs =>
   def state: CubeState
   def *(rhs: Alg) = Comb(lhs, rhs)
+
+  def U = Comb(lhs, algs.U)
+  def D = Comb(lhs, algs.D)
+  def R = Comb(lhs, algs.R)
+  def L = Comb(lhs, algs.L)
+  def F = Comb(lhs, algs.F)
+  def B = Comb(lhs, algs.B)
+
+  def U2 = Comb(lhs, algs.U2)
+  def D2 = Comb(lhs, algs.D2)
+  def R2 = Comb(lhs, algs.R2)
+  def L2 = Comb(lhs, algs.L2)
+  def F2 = Comb(lhs, algs.F2)
+  def B2 = Comb(lhs, algs.B2)
+
+  def U3 = Comb(lhs, algs.U3)
+  def D3 = Comb(lhs, algs.D3)
+  def R3 = Comb(lhs, algs.R3)
+  def L3 = Comb(lhs, algs.L3)
+  def F3 = Comb(lhs, algs.F3)
+  def B3 = Comb(lhs, algs.B3)
 }
 
 object Alg {
