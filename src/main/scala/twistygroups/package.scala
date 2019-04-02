@@ -40,4 +40,6 @@ package object twistygroups {
     if (cycles.length > 1) None
     else cycles.headOption
   }
+
+  def toPerm(cycle: Cycle): Perm = Perm(cycle.seq: _*)
 }
