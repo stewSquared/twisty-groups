@@ -1,0 +1,143 @@
+* Introduction
+** Hello!
+   - Stewart Stewart from New York, New York
+   - Consultant at Inner Product
+   - Math nerd + puzzle geek + programmer
+   - Twitter: @stewSqrd
+   - https://github.com/stewSquared/twisty-groups
+** All you really need to know
+*** Commutators and Conjugate
+ - Inverse: A' reads "A inverse"
+ - Commutator: A B A' B'
+ - Conjugate: C Algorithm C'
+*** How-to
+ 1. Invent a Commutator
+ 2. Use a Commutator
+ 3. ???
+ 4. Profit!
+** Goals
+   - Practical? Maybe.
+   - How math informs solution
+   - Have fun with Math + Puzzles + Programming 
+   - Ask questions!
+* Group Theory
+** Define Group
+*** Monoid w/ Inverse
+
+#+BEGIN_SRC scala
+trait Group[A] {
+  def identity: A
+  def inverse(a: A): A
+  def combine(a: A, b: A): A
+}
+#+END_SRC
+
+*** Permutation Group
+    - Consider Finite Groups
+    - Inverse && complete =>
+**** Every element
+ - is a bijection
+**** Every element is
+ -  a permutation
+**** Every group is
+ - isomorphic to a permutation group!
+** Examples
+*** Integers & Cyclic Groups
+*** S3/D3 & Cayley Graph
+*** Street Map Directions
+** Concepts
+*** Parity
+    - Permutations decompose into disjoint cycles
+    - Cycles decompose into sum of swaps
+    - 3-Cycles are even
+    - Even/odd, positive/negative, true/false
+*** Conjugate
+    - A B A'
+    - A: setup moves
+    - B: useful alg
+*** Commutator
+    - A B A' B'
+    - Measure of non-abelian-ness
+    - Even permutation
+    - Minimal intersection is a 3-cycle 
+* Rubik's Cube
+** Mechanical Structure
+*** 48 stickers: A Permutation!
+    - Center stickers are stationary
+    - "Homomorphism into S48"
+    - ie., permutation of 48 points
+    - Difficult to see structure
+    - Array[Int] contains many illegal scrambles
+*** 21 pieces: Product of disjoint Permutations
+    - Stickers cluster on pieces
+    - 8 corners, 12 edges, 1 core
+    - Edge and Corner pieces are distinct
+    - Centers pieces are fixed to core
+    - 8! * 3^8 * 12! * 2^12 ???
+    - Not quite...
+*** Piece Orientations (demo)
+    - Each corner has 3 orientations
+    - Each edge has 2 orientations
+    - Orientation definitions are arbitrary
+** Group Structure
+*** Generators
+    - <U, D, R, L, F, B>
+    - Each is a paired 4-cycles
+    - Edge and corner parity are synced
+    - Orientation of final piece is fixed
+*** Subgroups
+    - CO: Corner Orientation
+    - CP: Corner Permutation
+    - EO: Edge Orientation
+    - EP: Edge Permutation
+    - Orientation is Normal
+    - Semidirect product of Orientation and Permutation
+    - Or subdirect product of Edges and Corners
+*** Minimal operations (summary)
+    - Orientation flips are paired
+    - 3-cycles of edges/corners
+    - or swap 2 edges and 2 corners
+*** 43 quintillion
+    - (8! * 12!)   * 3^8 * 2^12 (overcounts)
+    - (8! * 12!)/2 * 3^7 * 2^11 (corrected)
+* Solution
+** Approaches
+*** Thistlewaite (Computers)
+    - <U2, D2, R2, L2, F2, B2> - Half-turn subgroup (even perm)
+    - <U, D, R2, L2, F2, B2> - CO preserved
+    - <U, D, R, L, F2, B2> - EO preserved
+    - <U, D, R, L, F, B> - Full Rubik's Group
+*** Layer-by-layer (Humans)
+    - Demo
+    - CFOP: Cross, F2L, Orientation, Permutation
+*** Blind (Cycle decomposition)
+    - Memorize Cycles
+    - eg. CubeState
+    - Commutators!
+    - No demo. (sorry)
+** Model (Demo Code)
+*** Cube State
+https://github.com/stewSquared/twisty-groups/src/main/scala/twistygroups/cube/model/CubeState.scala
+*** Algorithms DSL
+https://github.com/stewSquared/twisty-groups/src/main/scala/twistygroups/cube/algs/Alg.scala
+** Corner Commutators (Live Coding Demo)
+https://github.com/stewSquared/twisty-groups/src/main/scala/twistygroups/example/CornerComms.scala
+** Solve! (Cube Demo)
+* Resources and References
+** Libraries
+   - Cats (Typeclasses): https://github.com/typelevel/cats
+   - Spire (Math): https://github.com/typelevel/spire
+   - AlaSc (Computational Group Theory): https://github.com/denisrosset/alasc
+   - Cuble.js (bluetooth): https://github.com/cubing/cuble.js
+   - Twisty.js (cube animations): https://github.com/cubing/twisty.js
+** Reading
+   - A Book of Abstract Algebra by Charles C. Pinter
+   - Ryan Heise's puzzle page: https://www.ryanheise.com/cube/theory.html
+   - Macky's blindsolving page: https://cubefreak.net/bld/3op_guide.php
+   - Rubik's Cube Group at Wikipedia: https://en.wikipedia.org/wiki/Rubik%27s_Cube_group
+   - Group Theory and the Rubik's Cube: http://www.math.harvard.edu/~jjchen/docs/Group%20Theory%20and%20the%20Rubik's%20Cube.pdf
+   - Intuition for SemiDirect Products http://rwoodley.org/?p=1550
+** Buy Puzzles
+   - Giiker Cube: http://giiker.cn 
+   - http://TheCubicle.com 
+   - http://SpeedCubeShop.com
