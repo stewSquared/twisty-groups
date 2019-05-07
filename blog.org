@@ -1,0 +1,303 @@
+* Group Theory for Functional Programmers
+** Defining "Group"
+*** "A Monoid with inverse"
+
+    FP libraries and tutorials frequently make mention Monoids and Semigroups, yet say little about their close cousins, Groups. They are close enough that you could communicate its formal definition in terms of the other typeclasses.
+
+    A Semigroup is a set with an associative binary operation. It lets you combine any two elements to get another (eg., adding two integers to get another). A Monoid adds the concept of an identity element. Combining an element with the identity results in that same element, (eg., adding zero). These are [[https://typelevel.org/cats/typeclasses/semigroup.html][both]] [[https://typelevel.org/cats/typeclasses/monoid.html][documented]] in Cats' page on [[https://typelevel.org/cats/typeclasses][Type Classes]]. 
+
+    A Group requires that every element has an inverse. You can combine an element with its inverse to "cancel out" to the identity element (eg., subtracting integers). While it's not used as often or heavily documented, cats and other FP concepts do [[https://typelevel.org/cats/api/cats/kernel/Group.html][define them]]. The ~Group[A]~ typeclass includes an additional method, ~def inverse(a: A): A~, that maps each element to its inverse. It essentially looks like this:
+
+    #+BEGIN_SRC scala
+    trait Group[A] {
+      def identity: A
+      def inverse(a: A): A
+      def combine(a: A, b: A): A
+    }
+    #+END_SRC
+
+    This sounds simple, but it actually implies a lot of structure and laws for the set of ~A~, especially when the type is inhabited by a finite number of valid elements.
+
+*** "A group of permutations"
+
+    Every element of ~Group[A]~ can be seen a function ~A => A~ by partially applying ~combine~ like so:
+
+    #+BEGIN_SRC scala
+    val a: A = ???
+    val f = Group[A].combine(a, _)
+    #+END_SRC
+
+    Since every element has an inverse, the result of ~f~ is unique for each ~a: A~ (ie., ~f~ is "injective"). Since Groups (and Monoids and Semigroups) are closed under ~combine~, ~f~ can be applied to any element (ie., ~f~ is "surjective"). Together, these imply that ~f~ is a bijective function.
+
+    In other words, from each `a: A`, we get a permutation of the elements of `A`. In fact, every group is isomorphic to a group of permutations where the ~combine~ operation is composition of these bijective functions. This fact is known as [[https://en.wikipedia.org/wiki/Cayley%27s_theorem][Cayley's Theorem]].
+
+    This is important because permutations are easy to compose, translate to and from other types into other types. Furthermore, every finite permutation group can be decomposed into a unique product of finite simple groups. These simple groups and their properties are well understood and can help reveal the structure of groups in the problem domain.
+
+** Example: Symmetries of a Triangle
+
+   Consider the ways you can flip and rotate an equilateral triangle that it fits into its original outline. There are six ways to do so, as shown in [[https://www.researchgate.net/figure/The-set-of-symmetry-transformations-that-define-the-symmetry-group-of-the-equilateral_fig2_51680377][this image]]. These are called the symmetries of a triangle.
+
+   If you label the vertices A, B, and C, then name them off clockwise from the top of a triangle, each of these flips corresponds to one of six permutations of the three letters:
+
+   ~ABC~ ~ACB~
+
+   ~CAB~ ~CBA~
+
+   ~BCA~ ~BAC~
+
+   This group is called the dihedral group of degree three, because it corresponds to the symmetries of a triangle. It's also called the symmetric group of order three, because it corresponds to the permutations of three points.
+
+   These six elements can be combined to yield a different element from the group by performing their flips/rotations in succession. ~CAB~ is the result of rotating ~ABC~ clockwise, but we can think of it as "rotate clockwise" in general. Similarly ~BCA~ means rotate counter clockwise. Rotating clockwise and then counter clockwise gets you back to the start position, so we can write this as ~CAB * BCA = ABC~, where ~x * y~ means "do x and then y". (Note that the literature on permutations often takes ~*~ to mean the composition of functions, rather than sequencing. This corresponds to the [[https://www.scala-lang.org/api/current/scala/Function1.html][Scala standard library methods on Function1]]. ~g compose f~ is equivalent to ~f andThen g~). Rotating the triangle twice is equivalent to rotating it counter-clockwise, so ~CAB * CAB = BCA~.
+
+   #TODO Consider making this section "Rotations of a Triangle", about C3, the cyclic group of order three. You can follow it up with S3/D3 by introducing flips.
+
+
+* Permutations as functions
+** Scrambles of a string
+
+   You might have learned to think of permutations as rearrangements of elements in a collection. In Scala, every ~SeqLike~ has a [[https://www.scala-lang.org/api/current/scala/collection/SeqLike.html#permutations:Iterator[Repr]][~.permutations~]] method that will return an iterator over every permutation of its elements. Here's an example from the REPL:
+
+   #+BEGIN_SRC scala
+   scala> "ABC".permutations.toList
+   res0: List[String] = List(ABC, ACB, BAC, BCA, CAB, CBA)
+   #+END_SRC
+
+   What might not be immediately obvious is that each of these permutations can be identified with a bijective function from the set of elements to itself. For example, consider the fourth element, ~"BCA"~ . It permutes ~"ABC"~ by sending ~'A'~ to ~'B'~ , ~'B'~ to ~'C'~ , and  ~'C'~ to ~'A'~. In Scala, we can represent these permutations with a Map.
+
+   #+BEGIN_SRC scala
+   val bca = Map[Char, Char](
+     'A' -> 'B',
+     'B' -> 'C',
+     'C' -> 'A'
+   )
+   "ABC".map(bca) // "BCA"
+   "BCA".map(bca) // "CAB"
+   "CAB".map(bca) // "ABC"
+   #+END_SRC
+   
+   Notice that the permutation ~bca~ is now not just a permutation of the string ~"ABC"~, but a permutation of the set ~Set('A', 'B', 'C')~. As such, it can be mapped over other strings of those characters, like ~"BCA"~ and ~"CAB"~.
+    
+** The Permutations of Three Elements
+
+   Let's model these a bit more in-depth. For simplicity, we'll make up a type with only three values:
+
+   #+BEGIN_SRC scala
+   sealed trait Point extends Product with Serializable
+   case object A extends Point
+   case object B extends Point
+   case object C extends Point
+   val allPoints = Set(A, B, C)
+   #+END_SRC
+
+   As seen in the previous section, there are only six permutations of three elements (in general, there are ~n!~ perms of a set or type with only three values or elements). We'll model all six with the help of a type alias and constructor that defer to Map.
+
+   #+BEGIN_SRC scala
+   type Perm = Map[Point, Point]
+
+   object Perm {
+     def apply(pairs: (Point, Point)*): Perm = {
+       require(pairs.map(_._1).toSet == allPoints, s"Domain must be $allPoints.")
+       require(pairs.map(_._2).toSet == allPoints, s"Range must be $allPoints.")
+       Map(pairs: _*)
+     }
+
+     def apply(p: Point => Point): Perm = {
+       apply(A -> p(A), B -> p(B), C -> p(C))
+     }
+   }
+   #+END_SRC
+
+   This is still just a Map, but we've added constraints that emphasize the fact that a permutation is a bijective function from a set of elements to itself. The primary constructor checks that the domain and range are both the full set of points. The second constructor will help us convert composed Perms back from functions into maps (recall that in Scala, all `Map` inherits from `Function1`). Now we can model our permutations:
+
+   #+BEGIN_SRC scala
+   val abc = Perm(
+     A -> A,
+     B -> B,
+     C -> C
+   )
+   val acb = Perm(
+     A -> A,
+     B -> C,
+     C -> B
+   )
+   val bac = Perm(
+     A -> B,
+     B -> A,
+     C -> C
+   )
+   val bca = Perm(
+     A -> B,
+     B -> C,
+     C -> A
+   )
+   val cab = Perm(
+     A -> C,
+     B -> A,
+     C -> B
+   )
+   val cba = Perm(
+     A -> C,
+     B -> B,
+     C -> A
+   )
+   #+END_SRC
+
+   And use them like so: 
+
+   #+BEGIN_SRC scala
+   scala> List(A, B, C).map(bca)
+   res0: List[Point] = List(B, C, A)
+
+   scala> Perm(acb compose bac)
+   res1: Perm = Map(A -> C, B -> A, C -> B)
+
+   scala> val bcaTwice = Perm(bca andThen bca)
+   bcaTwice: Perm = Map(A -> C, B -> A, C -> B)
+
+   scala> assert(bcaTwice == cab)
+
+   scala> List(A, B, C).map(bca andThen bca andThen bca)
+   res3: List[Point] = List(A, B, C)
+   #+END_SRC
+
+   Our original six permutations have gone from scrambled strings to scrambling functions. Now we're doing FP!
+
+
+* Cycles, Swaps, and Permutations
+** Permutations as disjoint cycles
+  So far, we've worked with pretty simple permutations. ~acb~ swaps ~b~ with ~c~, while ~bca~ cycles all three. Every permutation of three points either swaps two points, or cycles three points. To get more interesting permutations, we need larger sets to permute.
+
+  So far, we've worked with pretty simple permutations; every permutation of three points either cycles all three, or swaps just two points. To make things more interesting, let's consider permutations of six points ~ABCDEF~, like this example:
+
+  #+BEGIN_SRC scala
+  val p = Perm(
+    A -> C,
+    B -> D,
+    C -> E,
+    D -> A,
+    E -> B,
+    F -> F
+  )
+  #+END_SRC
+
+  If we apply ~p~ to ~A~, we get ~C~. If we apply ~p~ again to the result, we get ~E~ via ~p(p(A)) == p(C) == E~. If we continue applying ~p~ repeatedly, we eventually get ~A~ again. Since we see 5 elements before repeating, we call this a 5-cycle, which we can draw like so: ~A -> C -> E -> B -> D -> A~. (Notice that ~F~ gets mapped back to itself; it's technically a 1-cycle, but we'll typically ignore cases like this.)
+
+  It's actually true in general that a permutation of a finite number of elements will map an element to itself given repeated applications. Because the number of elements is finite, we must eventually repeat some result, and since everything argument gets mapped to a unique result, the only way we can repeat a result is by repeating an argument we've seen.
+
+  Let's consider a different permutation:
+
+  #+BEGIN_SRC scala
+  val r = Perm(
+    A -> B,
+    B -> C,
+    C -> A,
+    D -> D,
+    E -> F,
+    F -> E,
+  )
+  #+END_SRC
+
+  We can decompose ~r~ into two cycles: (A -> B -> C -> A), and (E -> F -> E). 
+
+** Cycles as the composition of swaps  
+
+Let's once again consider a simple 3-cycle.
+
+* Group Theory
+** Concepts we'll use
+*** Parity
+    - Permutations decompose into disjoint cycles
+    - Cycles decompose into sum of swaps
+    - 3-Cycles are even
+    - Even/odd, positive/negative, true/false
+*** Conjugate
+    - A B A'
+    - A: setup moves
+    - B: useful alg
+*** Commutator
+    - A B A' B'
+    - Measure of non-abelian-ness
+    - Even permutation
+    - Minimal intersection is a 3-cycle 
+
+* Rubik's Cube
+** Mechanical Structure
+*** 48 stickers: A Permutation!
+    - Center stickers are stationary
+    - "Homomorphism into S48"
+    - ie., permutation of 48 points
+    - Difficult to see structure
+    - Array[Int] contains many illegal scrambles
+*** 21 pieces: Product of disjoint Permutations
+    - Stickers cluster on pieces
+    - 8 corners, 12 edges, 1 core
+    - Edge and Corner pieces are distinct
+    - Centers pieces are fixed to core
+    - 8! * 3^8 * 12! * 2^12 ???
+    - Not quite...
+*** Piece Orientations (demo)
+    - Each corner has 3 orientations
+    - Each edge has 2 orientations
+    - Orientation definitions are arbitrary
+** Group Structure
+*** Generators
+    - <U, D, R, L, F, B>
+    - Each is a paired 4-cycles
+    - Edge and corner parity are synced
+    - Orientation of final piece is fixed
+*** Subgroups
+    - CO: Corner Orientation
+    - CP: Corner Permutation
+    - EO: Edge Orientation
+    - EP: Edge Permutation
+    - Orientation is Normal
+    - Semidirect product of Orientation and Permutation
+    - Or subdirect product of Edges and Corners
+*** Minimal operations (summary)
+    - Orientation flips are paired
+    - 3-cycles of edges/corners
+    - or swap 2 edges and 2 corners
+*** 43 quintillion
+    - (8! * 12!)   * 3^8 * 2^12 (overcounts)
+    - (8! * 12!)/2 * 3^7 * 2^11 (corrected)
+* Solution
+** Approaches
+*** Thistlewaite (Computers)
+    - <U2, D2, R2, L2, F2, B2> - Half-turn subgroup (even perm)
+    - <U, D, R2, L2, F2, B2> - CO preserved
+    - <U, D, R, L, F2, B2> - EO preserved
+    - <U, D, R, L, F, B> - Full Rubik's Group
+*** Layer-by-layer (Humans)
+    - Demo
+    - CFOP: Cross, F2L, Orientation, Permutation
+*** Blind (Cycle decomposition)
+    - Memorize Cycles
+    - eg. CubeState
+    - Commutators!
+    - No demo. (sorry)
+** Model (Demo Code)
+*** Cube State
+https://github.com/stewSquared/twisty-groups/src/main/scala/twistygroups/cube/model/CubeState.scala
+*** Algorithms DSL
+https://github.com/stewSquared/twisty-groups/src/main/scala/twistygroups/cube/algs/Alg.scala
+** Corner Commutators (Live Coding Demo)
+https://github.com/stewSquared/twisty-groups/src/main/scala/twistygroups/example/CornerComms.scala
+** Solve! (Cube Demo)
+* Resources and References
+** Libraries
+   - Cats (Typeclasses): https://github.com/typelevel/cats
+   - Spire (Math): https://github.com/typelevel/spire
+   - AlaSc (Computational Group Theory): https://github.com/denisrosset/alasc
+   - Cuble.js (bluetooth): https://github.com/cubing/cuble.js
+   - Twisty.js (cube animations): https://github.com/cubing/twisty.js
+** Reading
+   - A Book of Abstract Algebra by Charles C. Pinter
+   - Ryan Heise's puzzle page: https://www.ryanheise.com/cube/theory.html
+   - Macky's blindsolving page: https://cubefreak.net/bld/3op_guide.php
+   - Rubik's Cube Group at Wikipedia: https://en.wikipedia.org/wiki/Rubik%27s_Cube_group
+   - Group Theory and the Rubik's Cube: http://www.math.harvard.edu/~jjchen/docs/Group%20Theory%20and%20the%20Rubik's%20Cube.pdf
+   - Intuition for SemiDirect Products http://rwoodley.org/?p=1550
+** Buy Puzzles
+   - Giiker Cube: http://giiker.cn 
+   - http://TheCubicle.com 
+   - http://SpeedCubeShop.com
