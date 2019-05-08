@@ -65,9 +65,12 @@ package object perms {
 
   val allPerms = Set(abc, acb, bac, bca, cab, cba)
 
-  def printTriangle(perm: Perm): Unit = {
-    println(s"  ${perm(A)}  ")
-    println(" / \\ ")
-    println(s"${perm(B)}---${perm(C)}")
+  def printTriangle(description: String, perm: Perm): Unit = {
+    println(s"""|
+                | $description:
+                |   ${perm(A)}
+                |  / \\
+                | ${perm(B)}---${perm(C)}
+                |""".stripMargin)
   }
 }
