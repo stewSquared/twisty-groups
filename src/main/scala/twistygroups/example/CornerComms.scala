@@ -1,8 +1,11 @@
 package twistygroups
 package example
 
-import net.alasc.perms.{Cycle, Perm}
+import cats.syntax.eq._
+import cats.syntax.group._
+
 import cube.algs._
+import perms._
 
 trait CornerComms {
 
@@ -72,28 +75,30 @@ object Main extends App with CornerComms {
 
   def printCornerPermSolution(scramble: Alg): Unit = {
     println("================================")
-    println
+    println()
     println("scramble: " + scramble)
     // println(scramble.state.edges)
     println(scramble.state.corners)
-    println
+    println()
 
+    // We reverse the list of cycles, since we combine them with
+    // andThen rather than compose
     val solutionCycles: List[Cycle] =
-      asThreeCycles(scramble.state.corners.permutation.inverse).get
+      scramble.state.corners.permutation.inverse.asThreeCycles.get.reverse
 
-    assert((scramble.state.cp |+| solutionCycles.map(toPerm).reduce(_ |+| _)) == Perm.id)
+    assert((scramble.state.cp andThen solutionCycles.map(_.toPerm).reduce(_ andThen _)) === Perm())
 
     solutionCycles.foreach { cycle =>
       val comm = commIndex.get(cycle).getOrElse {
         val conjCycleByR2 = {
-          asCycle(R2.state.cp |+| toPerm(cycle) |+| R2.state.cp).get
+          (R2.state.cp |+| cycle.toPerm |+| R2.state.cp).cycles.head
         }
         Conj(R2, commIndex(conjCycleByR2))
       }
 
       println(s"$cycle: $comm")
     }
-    println
+    println()
   }
 
   scrambles foreach printCornerPermSolution

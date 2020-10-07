@@ -2,9 +2,12 @@ package twistygroups
 package cube
 package model
 
-import cats.kernel.Group
+import cats.kernel.{Eq, Group}
+import cats.syntax.eq._
 import cats.syntax.group._
-import net.alasc.perms._
+
+import perms.Perm
+import perms.PermEq
 
 final case class CO private(os: Vector[Int]) {
   override def toString = os.map {
@@ -14,13 +17,18 @@ final case class CO private(os: Vector[Int]) {
   }.mkString("CO(", ",", ")")
 
   def permute(perm: Perm): CO =
-    CO((1 to 8).toVector.map(i => os(perm.invImage(i) - 1)))
+    // TODO verify perm no larger than 8
+    // TODO consider 0 index
+    CO(perm.permute(0 +: os).get.tail)
+    // CO((1 to 8).toVector.map(i => os(perm.invert(i) - 1)))
 }
 
 object CO {
   def apply(os: Vector[Int]): CO = new CO(os.map(Math.floorMod(_, 3)))
 
   def apply(os: Int*): CO = apply(os.toVector)
+
+  implicit val COEq: Eq[CO] = Eq.fromUniversalEquals
 
   implicit object COGroup extends Group[CO] {
     def empty = CO(Vector.fill(8)(0))
@@ -32,13 +40,18 @@ object CO {
 final case class CornersState(permutation: Perm, orientation: CO)
 
 object CornersState {
-  val id = CornersState(Perm.id, Group.empty[CO])
+  val id = CornersState(Perm(), Group.empty[CO])
+
+  implicit object CornersStateEq extends Eq[CornersState] {
+    def eqv(x: CornersState, y: CornersState) =
+      x.permutation === y.permutation && x.orientation === y.orientation
+  }
 
   implicit object CornersStateGroup extends cats.kernel.Group[CornersState] {
 
     def combine(x: CornersState, y: CornersState) = CornersState(
-      x.permutation |+| y.permutation,
-      x.orientation.permute(y.permutation) |+| y.orientation
+      y.permutation |+| x.permutation,
+      y.orientation |+| x.orientation.permute(y.permutation)
     )
     def empty = CornersState.id
     def inverse(a: CornersState) = CornersState(

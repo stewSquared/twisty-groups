@@ -2,9 +2,10 @@ package twistygroups
 package cube
 package model
 
-import net.alasc.perms._
-import cats.kernel.Group
+import cats.kernel.{Eq, Group}
+import cats.syntax.eq._
 import cats.syntax.group._
+import perms.Perm
 
 final case class CubeState(corners: CornersState, edges: EdgesState) {
   import CubeState._
@@ -39,6 +40,11 @@ final case class CubeState(corners: CornersState, edges: EdgesState) {
 
 object CubeState {
   val id = CubeState(CornersState.id, EdgesState.id)
+
+  implicit object CubeStateEq extends Eq[CubeState] {
+    def eqv(x: CubeState, y: CubeState) =
+      x.corners === y.corners && x.edges === y.edges
+  }
 
   implicit object CubeStateGroup extends cats.kernel.Group[CubeState] {
     def combine(x: CubeState, y: CubeState) = CubeState(

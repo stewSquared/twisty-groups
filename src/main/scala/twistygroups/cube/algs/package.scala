@@ -1,7 +1,7 @@
 package twistygroups
 package cube
 
-import net.alasc.perms.{Perm, Cycle}
+import perms.{Cycle, Perm, PermOps}
 
 package object algs {
   // Aliases for inverse basic turns that are easier to type
@@ -13,19 +13,20 @@ package object algs {
   val B3 = `B'`
 
   def cornerThreeCycleMap(comms: Seq[Alg]): Map[Cycle, Alg] = {
-    comms.groupBy(alg => asThreeCycle(alg.state.cp).get)
-      .mapValues(algs => algs.minBy(_.toString.length))
+    // comms are assumed to be 3-cycles made from simple commutators
+    comms.groupBy(alg => alg.state.cp.asThreeCycles.get.head)
+      .view.mapValues(algs => algs.minBy(_.toString.length)).toMap
   }
 
   def threeCycleMap(comms: Seq[Alg], p: Alg => Perm): Map[Cycle, Alg] = {
-    comms.groupBy(alg => asThreeCycle(p(alg)).get)
-      .mapValues(algs => algs.minBy(_.toString.length))
+    comms.groupBy(alg => p(alg).asThreeCycles.get.head)
+      .view.mapValues(algs => algs.minBy(_.toString.length)).toMap
   }
 
   def cycleMap(comms: Seq[Alg], p: Alg => Perm): Map[Cycle, Alg] = {
-    comms.flatMap(alg => asThreeCycle(p(alg)).map(_ -> alg))
+    comms.flatMap(alg => p(alg).asThreeCycles.map(_.head -> alg))
       .groupBy(_._1)
-      .mapValues(_.map(_._2).minBy(_.toString.length))
+      .view.mapValues(_.map(_._2).minBy(_.toString.length)).toMap
   }
 
   def edgeCycleMap(comms: Seq[Alg]) = threeCycleMap(comms, _.state.edges.permutation)

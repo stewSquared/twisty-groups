@@ -2,11 +2,14 @@ package twistygroups
 package cube
 package model
 
-import org.scalatest._
-import net.alasc.perms._
-import cats.kernel.Group, cats.syntax.group._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
+import cats.kernel.Group
+import cats.syntax.group._
 
-class CubeStateSpec extends FlatSpec with Matchers {
+import perms.Perm
+
+class CubeStateSpec extends AnyFlatSpec with Matchers {
   import CubeState.{id, up, right, front, down, left, back}
 
   "CubeState composition" should "pass some spot checks" in {
@@ -47,7 +50,7 @@ class CubeStateSpec extends FlatSpec with Matchers {
 
     val trig2 = trig |+| trig
 
-    (trig2.d |+| trig2.d |+| trig2.d2) shouldBe CubeState(CornersState(Perm.id, CO(0,0,0,0,0,1,1,1)), EdgesState.id)
+    (trig2.d |+| trig2.d |+| trig2.d2) shouldBe CubeState(CornersState(Perm(), CO(0,0,0,0,0,1,1,1)), EdgesState.id)
 
     (trig |+| trig |+| trig).edges shouldBe EdgesState.id
   }
