@@ -6,6 +6,7 @@ import cats.kernel.Eq
 import cats.kernel.Group
 import spire.algebra.Action
 import spire.algebra.partial.PartialAction
+import spire.util.Opt
 
 /** Represents a permutation encoded as a map from preimages to images, including
   * only pairs that are moved by the permutation (so the identity is Map.empty).
@@ -62,10 +63,14 @@ class Perm private (private[Perm] val mapping: Map[Int, Int])
   def image: Set[Int] = mapping.keySet
 
   /** Permute a seq as long as all the moved points are valid indices. */
-  def permute[A, CC[_]](seq: SeqOps[A, CC, CC[A]])(implicit factory: Factory[A, CC[A]]): Option[CC[A]] = {
-    if (image.isEmpty) Some(factory.fromSpecific(seq))
-    else if (image.max >= seq.size) None
-    else Some {
+  def permute[A, CC[A] <: SeqOps[A, CC, CC[A]]](
+      seq: CC[A]
+  )(implicit
+      factory: Factory[A, CC[A]]
+  ): Opt[CC[A]] = {
+    if (image.isEmpty) Opt(factory.fromSpecific(seq))
+    else if (image.max >= seq.size) Opt.empty
+    else Opt {
       val builder = factory.newBuilder
       for (i <- 0 until seq.size) {
         builder += seq(invert(i))
@@ -135,7 +140,9 @@ object Perm {
   }
   implicit val PermIntAction: Action[Int, Perm] = new PermIntAction
   implicit val PermGroup: Group[Perm] = new PermGroup
-  // implicit def PermSeqPartialAction[A, CC[A] <: SeqLike[A, CC[A]]](implicit cbf: CanBuildFrom[CC[A], A, CC[A]]): PartialAction[CC[A], Perm] = new PermSeqPartialAction[A, CC[A]]
+  implicit def PermSeqPartialAction[A, CC[A] <: SeqOps[A, CC, CC[A]]](implicit
+      factory: Factory[A, CC[A]]
+  ): PartialAction[CC[A], Perm] = new PermSeqPartialAction[A, CC]
 }
 
 final class PermIntAction extends Action[Int, Perm] {
@@ -149,7 +156,10 @@ final class PermGroup extends Group[Perm] {
   def inverse(a: Perm): Perm = a.inverse
 }
 
-// final class PermSeqPartialAction[A, SA <: SeqLike[A, SA]](implicit cbf: CanBuildFrom[SA, A, SA]) extends PartialAction[SA, Perm] {
-//   def partialActl(perm: Perm, sa: SA): Opt[SA] = perm.permute[A, SA](sa)
-//   def partialActr(sa: SA, perm: Perm): Opt[SA] = partialActl(perm.inverse, sa)
-// }
+final class PermSeqPartialAction[A, CC[A] <: SeqOps[A, CC, CC[A]]](implicit
+    factory: Factory[A, CC[A]]
+) extends PartialAction[CC[A], Perm] {
+  def partialActl(perm: Perm, seq: CC[A]): Opt[CC[A]] = perm.permute[A, CC](seq)
+  def partialActr(seq: CC[A], perm: Perm): Opt[CC[A]] =
+    partialActl(perm.inverse, seq)
+}
