@@ -14,8 +14,9 @@ package object algs {
 
   def threeCycleMap(comms: Seq[Alg], p: Alg => Perm): Map[Cycle, Alg] = {
     // This assumes the perm represented by each alg is a single 3-cycle
-    comms.groupBy(alg => p(alg).asThreeCycles.get.head)
-      .view.mapValues(algs => algs.minBy(_.toString.length)).toMap
+    comms.groupMapReduce(alg => p(alg).asThreeCycles.get.head)(identity){
+      case (a1, a2) => if (a1.moves < a2.moves) a1 else a2
+    }
   }
 
   def cycleMap(comms: Seq[Alg], p: Alg => Perm): Map[Cycle, Alg] = {

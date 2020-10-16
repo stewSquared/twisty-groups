@@ -9,6 +9,8 @@ import cube.model.CubeState
 
 sealed trait Alg { lhs =>
   def state: CubeState
+  def moves: Int // calculate number of moves in half-turn metric
+
   def *(rhs: Alg) = Comb(lhs, rhs)
 
   def U = Comb(lhs, algs.U)
@@ -40,10 +42,13 @@ object Alg {
 }
 
 case object ID extends Alg {
-  def state = CubeState.id
+  val state = CubeState.id
+  val moves = 0
 }
 
-sealed class Turn(override val state: CubeState) extends Alg
+sealed class Turn(override val state: CubeState) extends Alg {
+  val moves = 1
+}
 
 case object U extends Turn(CubeState.up)
 case object D extends Turn(CubeState.down)
@@ -90,6 +95,7 @@ case object `B'` extends Turn(CubeState.id.b3)
 final case class Comb private[Comb] (a: Alg, b: Alg) extends Alg {
   override def toString = s"$a $b"
   override def state = a.state |+| b.state
+  override def moves = a.moves + b.moves
 }
 
 object Comb {
@@ -103,6 +109,7 @@ object Comb {
 final case class Conj private[Conj] (a: Alg, b: Alg) extends Alg {
   override def toString = s"[$a: $b]"
   override def state = a.state |+| b.state |-| a.state
+  override def moves = a.moves * 2 + b.moves
 }
 
 object Conj {
@@ -116,6 +123,7 @@ object Conj {
 final case class Comm private[Comm] (a: Alg, b: Alg) extends Alg {
   override def toString = s"[$a, $b]"
   override def state = a.state |+| b.state |-| a.state |-| b.state
+  override def moves = a.moves * 2 + b.moves * 2
 }
 
 object Comm {
