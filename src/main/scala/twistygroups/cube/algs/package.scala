@@ -12,13 +12,8 @@ package object algs {
   val F3 = `F'`
   val B3 = `B'`
 
-  def cornerThreeCycleMap(comms: Seq[Alg]): Map[Cycle, Alg] = {
-    // comms are assumed to be 3-cycles made from simple commutators
-    comms.groupBy(alg => alg.state.cp.asThreeCycles.get.head)
-      .view.mapValues(algs => algs.minBy(_.toString.length)).toMap
-  }
-
   def threeCycleMap(comms: Seq[Alg], p: Alg => Perm): Map[Cycle, Alg] = {
+    // This assumes the perm represented by each alg is a single 3-cycle
     comms.groupBy(alg => p(alg).asThreeCycles.get.head)
       .view.mapValues(algs => algs.minBy(_.toString.length)).toMap
   }
@@ -28,6 +23,4 @@ package object algs {
       .groupBy(_._1)
       .view.mapValues(_.map(_._2).minBy(_.toString.length)).toMap
   }
-
-  def edgeCycleMap(comms: Seq[Alg]) = threeCycleMap(comms, _.state.edges.permutation)
 }
