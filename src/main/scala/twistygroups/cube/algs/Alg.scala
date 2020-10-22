@@ -33,6 +33,31 @@ sealed trait Alg { lhs =>
   def L3 = Comb(lhs, algs.L3)
   def F3 = Comb(lhs, algs.F3)
   def B3 = Comb(lhs, algs.B3)
+
+  def inverse: Alg = this match {
+    case ID => ID
+    case Comb(a, b) => Comb(b.inverse, a.inverse)
+    case Conj(a, b) => Conj(a, b.inverse)
+    case Comm(a, b) => Comm(b.inverse, a.inverse)
+    case algs.U => algs.U3
+    case algs.D => algs.D3
+    case algs.R => algs.R3
+    case algs.L => algs.L3
+    case algs.F => algs.F3
+    case algs.B => algs.B3
+    case algs.U2 => algs.U2
+    case algs.D2 => algs.D2
+    case algs.R2 => algs.R2
+    case algs.L2 => algs.L2
+    case algs.F2 => algs.F2
+    case algs.B2 => algs.B2
+    case algs.U3 => algs.U
+    case algs.D3 => algs.D
+    case algs.R3 => algs.R
+    case algs.L3 => algs.L
+    case algs.F3 => algs.F
+    case algs.B3 => algs.B
+  }
 }
 
 object Alg {
@@ -46,7 +71,7 @@ case object ID extends Alg {
   val moves = 0
 }
 
-sealed class Turn(override val state: CubeState) extends Alg {
+sealed abstract class Turn(override val state: CubeState) extends Alg {
   val moves = 1
 }
 
