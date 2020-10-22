@@ -88,15 +88,23 @@ object Main extends App with CornerComms {
 
     assert((scramble.state.cp andThen solutionCycles.map(_.toPerm).reduce(_ andThen _)) === Perm())
 
-    solutionCycles.foreach { cycle =>
-      val comm = commIndex.get(cycle).getOrElse {
+    val solutionAlgs = solutionCycles.map { cycle => cycle ->
+      commIndex.get(cycle).getOrElse {
         val conjCycleByR2 = {
           (R2.state.cp |+| cycle.toPerm |+| R2.state.cp).cycles.head
         }
         Conj(R2, commIndex(conjCycleByR2))
       }
+    }
 
-      println(s"$cycle: $comm")
+    solutionAlgs.foreach { case (cycle, alg) =>
+      println(s"$cycle: $alg")
+    }
+    println()
+
+    println("solution:")
+    solutionAlgs.foreach { case (_, alg) =>
+      println("  " + alg.turns.mkString(" "))
     }
     println()
   }

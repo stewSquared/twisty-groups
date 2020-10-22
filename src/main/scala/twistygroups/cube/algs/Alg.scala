@@ -58,21 +58,51 @@ sealed trait Alg { lhs =>
     case algs.F3 => algs.F
     case algs.B3 => algs.B
   }
+
+  def turns: Seq[Turn]
+  def prettyTurns = turns.mkString(" ")
 }
 
 object Alg {
   implicit object CubeAlgEq extends Eq[Alg] {
     def eqv(a: Alg, b: Alg) = a.state == b.state
   }
+
+  def fromString(string: String): Alg = {
+    string.split(' ').map[Alg] {
+      case "U" => algs.U
+      case "D" => algs.D
+      case "R" => algs.R
+      case "L" => algs.L
+      case "F" => algs.F
+      case "B" => algs.B
+
+      case "U2" => algs.U2
+      case "D2" => algs.D2
+      case "R2" => algs.R2
+      case "L2" => algs.L2
+      case "F2" => algs.F2
+      case "B2" => algs.B2
+
+      case "U'" => algs.`U'`
+      case "D'" => algs.`D'`
+      case "R'" => algs.`R'`
+      case "L'" => algs.`L'`
+      case "F'" => algs.`F'`
+      case "B'" => algs.`B'`
+    }.foldLeft[Alg](algs.ID)(_ * _)
+  }
 }
 
 case object ID extends Alg {
   val state = CubeState.id
   val moves = 0
+  val turns = Vector.empty
 }
 
 sealed abstract class Turn(override val state: CubeState) extends Alg {
   val moves = 1
+  def turns = Vector(this)
 }
 
 case object U extends Turn(CubeState.up)
@@ -121,6 +151,7 @@ final case class Comb private[Comb] (a: Alg, b: Alg) extends Alg {
   override def toString = s"$a $b"
   override def state = a.state |+| b.state
   override def moves = a.moves + b.moves
+  override def turns = a.turns ++ b.turns
 }
 
 object Comb {
@@ -128,13 +159,14 @@ object Comb {
     case (ID, alg) => alg
     case (alg, ID) => alg
     case (a, b) => new Comb(a, b)
-  }  
+  }
 }
 
 final case class Conj private[Conj] (a: Alg, b: Alg) extends Alg {
   override def toString = s"[$a: $b]"
   override def state = a.state |+| b.state |-| a.state
   override def moves = a.moves * 2 + b.moves
+  override def turns = a.turns ++ b.turns ++ a.inverse.turns
 }
 
 object Conj {
@@ -149,6 +181,7 @@ final case class Comm private[Comm] (a: Alg, b: Alg) extends Alg {
   override def toString = s"[$a, $b]"
   override def state = a.state |+| b.state |-| a.state |-| b.state
   override def moves = a.moves * 2 + b.moves * 2
+  override def turns = a.turns ++ b.turns ++ a.inverse.turns ++ b.inverse.turns
 }
 
 object Comm {
