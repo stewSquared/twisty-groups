@@ -36,10 +36,16 @@ class Perm private (private[Perm] val mapping: Map[Int, Int])
     this.compose(Perm(n0, n1, ns: _*))
   }
 
-  override def toString: String = {
+  def toStringPairs: String = {
     mapping.toSeq.sorted
       .map { case (k, v) => s"$k -> $v" }
       .mkString("Perm(", ", ", ")")
+  }
+
+  override def toString: String = {
+    this.cycles
+      .map(_.elems.mkString(", "))
+      .mkString("Perm(", ")(", ")")
   }
 
   override def equals(arg0: Any): Boolean =

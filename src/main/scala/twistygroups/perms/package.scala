@@ -1,9 +1,7 @@
 import cats.Eq
 
 package object perms {
-  implicit object PermEq extends Eq[Perm] {
-    def eqv(x: Perm, y: Perm) = x.show == y.show
-  }
+  implicit val PermEq = Eq.fromUniversalEquals
 
   implicit class PermOps(perm: Perm) {
     // TODO: make this safe (cycle requires at least two elements)
@@ -28,8 +26,12 @@ package object perms {
     def isEven: Boolean =
       ((perm.cycles.length % 2) ^ (perm.image.size % 2)) == 0
 
-    def show: String = {
-      s"""Perm${cycles.map(_.elems.mkString("(", ",", ")")).mkString}"""
+    // Show the perm in cyclic (one-line) notation
+    // lazy val pretty: String = cycles.map(_.pretty).mkString
+    lazy val pretty: String = {
+      cycles
+        .map(_.elems.mkString(" "))
+        .mkString("(", ")(", ")")
     }
 
     def asTranspositions: List[Perm] = PermOps.asTranspositions(perm)
