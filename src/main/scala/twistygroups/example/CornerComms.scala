@@ -86,7 +86,7 @@ object Main extends App with CornerComms {
     val solutionCycles: List[Cycle] =
       scramble.state.corners.permutation.inverse.asThreeCycles.get.reverse
 
-    assert((scramble.state.cp andThen solutionCycles.map(_.toPerm).reduce(_ andThen _)) === Perm())
+    assert((scramble.state.cp >> solutionCycles.map(_.toPerm).reduce(_ >> _)) === Perm())
 
     val solutionAlgs = solutionCycles.map { cycle => cycle ->
       commIndex.get(cycle).getOrElse {

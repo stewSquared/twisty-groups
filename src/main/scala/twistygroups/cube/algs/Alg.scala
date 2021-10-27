@@ -13,6 +13,8 @@ sealed trait Alg { lhs =>
 
   def *(rhs: Alg) = Comb(lhs, rhs)
 
+  def conjBy(a: Alg) = Conj(a, this)
+
   def U = Comb(lhs, algs.U)
   def D = Comb(lhs, algs.D)
   def R = Comb(lhs, algs.R)

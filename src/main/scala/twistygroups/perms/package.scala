@@ -23,6 +23,12 @@ package object perms {
       }
     }
 
+    def inv: Perm = perm.inverse
+
+    def *(that: Perm): Perm = perm.compose(that)
+
+    def >>(that: Perm): Perm = perm.andThen(that)
+
     def isEven: Boolean =
       ((perm.cycles.length % 2) ^ (perm.image.size % 2)) == 0
 
