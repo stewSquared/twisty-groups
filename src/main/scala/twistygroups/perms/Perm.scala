@@ -133,9 +133,9 @@ object Perm {
     * 2)`. At least two args are required in each parameter list.
     */
   def apply(n0: Int, n1: Int, ns: Int*): Perm = {
-    val cycles = n0 +: n1 +: ns
+    val cycle = n0 +: n1 +: ns
     require(
-      cycles.size == cycles.distinct.size,
+      cycle.size == cycle.distinct.size,
       "Cycle must not repeat elements"
     )
     apply((n0 +: n1 +: ns).zip(n1 +: ns :+ n0).toMap)
