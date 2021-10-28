@@ -70,7 +70,7 @@ object CubeState {
   val up    = CubeState(CornersState(Perm(1,2,3,4), CO(0,0,0,0,0,0,0,0)), EdgesState(Perm( 1, 2, 4, 5), EO(0,0,0,0,0,0,0,0,0,0,0,0)))
   val down  = CubeState(CornersState(Perm(5,6,7,8), CO(0,0,0,0,0,0,0,0)), EdgesState(Perm( 7, 8,10,11), EO(0,0,0,0,0,0,0,0,0,0,0,0)))
   val right = CubeState(CornersState(Perm(1,4,5,8), CO(2,0,0,1,2,0,0,1)), EdgesState(Perm( 5, 6, 8, 9), EO(0,0,0,0,0,0,0,0,0,0,0,0)))
-  val left  = CubeState(CornersState(Perm(2,3,6,7), CO(0,1,2,0,0,1,2,0)), EdgesState(Perm(11,12, 2, 3), EO(0,0,0,0,0,0,0,0,0,0,0,0)))
+  val left  = CubeState(CornersState(Perm(2,7,6,3), CO(0,1,2,0,0,1,2,0)), EdgesState(Perm(11,12, 2, 3), EO(0,0,0,0,0,0,0,0,0,0,0,0)))
   val front = CubeState(CornersState(Perm(1,8,7,2), CO(1,2,0,0,0,0,1,2)), EdgesState(Perm( 3, 4, 6, 7), EO(0,0,1,1,0,1,1,0,0,0,0,0)))
-  val back  = CubeState(CornersState(Perm(3,4,5,6), CO(0,0,1,2,1,2,0,0)), EdgesState(Perm( 9,10,12, 1), EO(1,0,0,0,0,0,0,0,1,1,0,1)))
+  val back  = CubeState(CornersState(Perm(3,6,5,4), CO(0,0,1,2,1,2,0,0)), EdgesState(Perm( 9,10,12, 1), EO(1,0,0,0,0,0,0,0,1,1,0,1)))
 }
