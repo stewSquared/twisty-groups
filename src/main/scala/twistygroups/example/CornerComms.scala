@@ -107,6 +107,7 @@ object Main extends App with CornerComms {
       println("  " + alg.turns.mkString(" "))
     }
     println()
+    io.StdIn.readLine()
   }
 
   scrambles foreach printCornerPermSolution

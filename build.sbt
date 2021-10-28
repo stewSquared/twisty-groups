@@ -10,10 +10,11 @@ lazy val root = (project in file("."))
     name := "twisty-groups",
     libraryDependencies += "org.typelevel" %% "cats-core" % "2.2.0",
     libraryDependencies += "org.typelevel" %% "spire" % "0.17.0-M1",
-    libraryDependencies += scalaTest % Test
+    libraryDependencies += scalaTest % Test,
   )
 
-initialCommands in console := """|import perms._
+connectInput/run := true
+initialCommands/console := """|import perms._
                                  |import cats.kernel.Group, cats.syntax.group._
                                  |import twistygroups._, cube.algs._, cube.model.CubeState.id
                                  |implicit val random = new scala.util.Random
