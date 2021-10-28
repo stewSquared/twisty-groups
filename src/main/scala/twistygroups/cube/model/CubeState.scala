@@ -11,6 +11,17 @@ final case class CubeState(corners: CornersState, edges: EdgesState) {
   import CubeState._
   import CubeState.CubeStateGroup
 
+  def pretty: String = {
+    def emptyIsSolved[A : Group](a: A, message: String): String =
+      if (a == Group[A].empty) "solved" else message
+
+    s"""|cp: ${emptyIsSolved(cp, cp.pretty)}
+        |co: ${emptyIsSolved(co, co.os.mkString(" "))}
+        |ep: ${emptyIsSolved(ep, ep.pretty)}
+        |eo: ${emptyIsSolved(eo, eo.os.mkString(" "))}
+        |""".stripMargin
+  }
+
   def cp = corners.permutation
   def co = corners.orientation
   def ep = edges.permutation

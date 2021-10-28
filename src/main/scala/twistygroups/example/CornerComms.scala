@@ -44,7 +44,7 @@ trait CornerComms {
     twoOnTop ++ oneOnTop
   }
 
-  val allComms = cheat
+  val allComms: List[Alg] = cheat
 
   ////////////////////////////////////////////////////////////////
   // Part 2: Putting it all together!
@@ -78,7 +78,8 @@ object Main extends App with CornerComms {
     println()
     println("scramble: " + scramble)
     // println(scramble.state.edges)
-    println(scramble.state.corners)
+    println(s"permutation: ${scramble.state.cp.pretty}")
+    println(s"orientation: ${scramble.state.co.toString.drop(2)}")
     println()
 
     // We reverse the list of cycles, since we combine them with
@@ -88,7 +89,7 @@ object Main extends App with CornerComms {
 
     assert((scramble.state.cp >> solutionCycles.map(_.toPerm).reduce(_ >> _)) === Perm())
 
-    val solutionAlgs = solutionCycles.map { cycle => cycle ->
+    val solutionAlgs: List[(Cycle, Alg)] = solutionCycles.map { cycle => cycle ->
       commIndex.get(cycle).getOrElse {
         val conjCycleByR2 = {
           (R2.state.cp |+| cycle.toPerm |+| R2.state.cp).cycles.head
@@ -98,7 +99,7 @@ object Main extends App with CornerComms {
     }
 
     solutionAlgs.foreach { case (cycle, alg) =>
-      println(s"$cycle: $alg")
+      println(s"${cycle.pretty}: $alg")
     }
     println()
 
