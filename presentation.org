@@ -1,4 +1,6 @@
 * Introduction
+Note: These are the "slides" for the 2019 NEScala presentation
+You might rather see [[file:presentation-sbtb-2021.org]]
 ** Hello!
    - Stewart Stewart from New York, New York
    - Consultant at Inner Product
