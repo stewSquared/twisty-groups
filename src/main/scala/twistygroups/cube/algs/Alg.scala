@@ -36,6 +36,42 @@ sealed trait Alg { lhs =>
   def F3 = Comb(lhs, algs.F3)
   def B3 = Comb(lhs, algs.B3)
 
+/** List of identities used (where [x,y] == x'y'xy and x^y == y'xy):
+  * [X]  [x,y]y = y^x
+  * [X]  x[x',y] = x'^y
+  * [ ]  [y,x] = [x,y]'
+  * [X]  [x,y] * [x,z]^y = [x,yz] (meh)
+  * [X]  [x,y]^z * [z,y] = [xz,y] (meh)
+  * [X]  [x,y]^x' = [y,x'] (useful)
+  * [X]  [x,y]^y' = [y',x] (useful)
+  * [ ]  Hall-Witt identity (too crazy)
+  */
+  def simplify: Alg = this match {
+    case Comb(x, y) => (x.simplify, y.simplify) match {
+      case (a, b) if a == b.inverse => ID
+      case (Comm(a, b), b0) if b == b0 => Conj(a, b).simplify
+      case (a0, Comm(a, b)) if a == a0.inverse => Conj(b, a0).simplify
+      case (Comm(a, b), Conj(b0, Comm(a0, c))) if a == a0 && b == b0 => Comm(a, Comb(b, c)).simplify
+      case (Conj(c, Comm(a, b)), Comm(c0, b0)) if b == b0 && c == c0 => Comm(Comb(a, c), b).simplify
+      case (a, b) => Comb(a, b)
+    }
+    case Conj(x, y) => (x.simplify, y.simplify) match {
+      case (a, b) if a == b => a
+      case (a, b) if a == b.inverse => a.inverse
+      case (a0, Comm(a, b)) if a0.inverse == a => Comm(b, a0).simplify
+      case (b0, Comm(a, b)) if b0.inverse == b => Comm(b0, a).simplify
+      case (a0, Conj(a, b)) => Conj(Comb(a0, a), b).simplify
+      case (a, b) => Conj(a, b)
+    }
+    case Comm(x, y) => (x.simplify, y.simplify) match {
+      case (a, b) if a == b => ID
+      case (a, b) if a == b.inverse => ID
+      case (a, b) => Comm(a, b)
+    }
+    case turn: Turn => turn
+    case ID => ID
+  }
+
   def inverse: Alg = this match {
     case ID => ID
     case Comb(a, b) => Comb(b.inverse, a.inverse)
@@ -66,6 +102,8 @@ sealed trait Alg { lhs =>
 }
 
 object Alg {
+  // This definition of Eq is debatable
+  // Alg is still a group without it
   implicit object CubeAlgEq extends Eq[Alg] {
     def eqv(a: Alg, b: Alg) = a.state == b.state
   }

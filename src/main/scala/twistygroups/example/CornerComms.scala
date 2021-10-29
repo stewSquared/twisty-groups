@@ -48,7 +48,7 @@ trait CornerComms {
   }
 
   val commIndex: Map[Cycle, Alg] = {
-    allComms.groupMapReduce(_.state.cp.asThreeCycles.get.head)(identity){
+    allComms.groupMapReduce(_.state.cp.asThreeCycles.get.head)(_.simplify){
       case (a1, a2) => if (a1.moves < a2.moves) a1 else a2
     }
   }
