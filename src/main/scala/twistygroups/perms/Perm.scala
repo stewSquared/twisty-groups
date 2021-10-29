@@ -48,6 +48,10 @@ class Perm private (private[Perm] val mapping: Map[Int, Int])
       .mkString("Perm(", ")(", ")")
   }
 
+  override def hashCode(): Int = {
+    mapping.toSeq.sorted.hashCode()
+  }
+
   override def equals(arg0: Any): Boolean =
     arg0 match {
       case that: Perm => this.mapping == that.mapping
