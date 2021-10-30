@@ -54,7 +54,7 @@ sealed trait Alg { lhs =>
     case ID => ID
     case Comb(a, b) => Comb(b.inverse, a.inverse)
     case Conj(a, b) => Conj(a, b.inverse)
-    case Comm(a, b) => Comm(b.inverse, a.inverse)
+    case Comm(a, b) => Comm(b, a)
 
     case U => U3
     case D => D3
