@@ -9,32 +9,10 @@ import cube.model.CubeState
 
 sealed trait Alg { lhs =>
   def state: CubeState
-  def moves: Int // calculate number of moves in half-turn metric
+  def turns: Seq[Turn]
+  def moves: Int // move count in half-turn metric
 
-  def *(rhs: Alg) = Comb(lhs, rhs)
-
-  def conjBy(a: Alg) = Conj(a, this)
-
-  def U = Comb(lhs, algs.U)
-  def D = Comb(lhs, algs.D)
-  def R = Comb(lhs, algs.R)
-  def L = Comb(lhs, algs.L)
-  def F = Comb(lhs, algs.F)
-  def B = Comb(lhs, algs.B)
-
-  def U2 = Comb(lhs, algs.U2)
-  def D2 = Comb(lhs, algs.D2)
-  def R2 = Comb(lhs, algs.R2)
-  def L2 = Comb(lhs, algs.L2)
-  def F2 = Comb(lhs, algs.F2)
-  def B2 = Comb(lhs, algs.B2)
-
-  def U3 = Comb(lhs, algs.U3)
-  def D3 = Comb(lhs, algs.D3)
-  def R3 = Comb(lhs, algs.R3)
-  def L3 = Comb(lhs, algs.L3)
-  def F3 = Comb(lhs, algs.F3)
-  def B3 = Comb(lhs, algs.B3)
+  def prettyTurns = turns.mkString(" ")
 
 /** List of identities used (where [x,y] == x'y'xy and x^y == y'xy):
   * [X]  [x,y]y = y^x
@@ -77,28 +55,28 @@ sealed trait Alg { lhs =>
     case Comb(a, b) => Comb(b.inverse, a.inverse)
     case Conj(a, b) => Conj(a, b.inverse)
     case Comm(a, b) => Comm(b.inverse, a.inverse)
-    case algs.U => algs.U3
-    case algs.D => algs.D3
-    case algs.R => algs.R3
-    case algs.L => algs.L3
-    case algs.F => algs.F3
-    case algs.B => algs.B3
-    case algs.U2 => algs.U2
-    case algs.D2 => algs.D2
-    case algs.R2 => algs.R2
-    case algs.L2 => algs.L2
-    case algs.F2 => algs.F2
-    case algs.B2 => algs.B2
-    case algs.U3 => algs.U
-    case algs.D3 => algs.D
-    case algs.R3 => algs.R
-    case algs.L3 => algs.L
-    case algs.F3 => algs.F
-    case algs.B3 => algs.B
-  }
 
-  def turns: Seq[Turn]
-  def prettyTurns = turns.mkString(" ")
+    case U => U3
+    case D => D3
+    case R => R3
+    case L => L3
+    case F => F3
+    case B => B3
+
+    case U2 => U2
+    case D2 => D2
+    case R2 => R2
+    case L2 => L2
+    case F2 => F2
+    case B2 => B2
+
+    case U3 => U
+    case D3 => D
+    case R3 => R
+    case L3 => L
+    case F3 => F
+    case B3 => B
+  }
 }
 
 object Alg {
@@ -110,27 +88,27 @@ object Alg {
 
   def fromString(string: String): Alg = {
     string.split(' ').map[Alg] {
-      case "U" => algs.U
-      case "D" => algs.D
-      case "R" => algs.R
-      case "L" => algs.L
-      case "F" => algs.F
-      case "B" => algs.B
+      case "U" => U
+      case "D" => D
+      case "R" => R
+      case "L" => L
+      case "F" => F
+      case "B" => B
 
-      case "U2" => algs.U2
-      case "D2" => algs.D2
-      case "R2" => algs.R2
-      case "L2" => algs.L2
-      case "F2" => algs.F2
-      case "B2" => algs.B2
+      case "U2" => U2
+      case "D2" => D2
+      case "R2" => R2
+      case "L2" => L2
+      case "F2" => F2
+      case "B2" => B2
 
-      case "U'" => algs.`U'`
-      case "D'" => algs.`D'`
-      case "R'" => algs.`R'`
-      case "L'" => algs.`L'`
-      case "F'" => algs.`F'`
-      case "B'" => algs.`B'`
-    }.foldLeft[Alg](algs.ID)(_ * _)
+      case "U'" => `U'`
+      case "D'" => `D'`
+      case "R'" => `R'`
+      case "L'" => `L'`
+      case "F'" => `F'`
+      case "B'" => `B'`
+    }.foldLeft[Alg](ID)(Comb.apply)
   }
 }
 
